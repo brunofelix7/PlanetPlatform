@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,21 +7,19 @@ using System.Collections.Generic;
 public class Player : MonoBehaviourSingleton<Player> {
 
 	//	Lista de danos
-	public List<Sprite> danos = new List<Sprite>();
+	public List<Image> danos = new List<Image>();
+
+	List<Itens> itemsEncostando = new List<Itens>();
 
 	//	Lista de hearts
-	public List<Image> hearts = new List<Image>();
-
-	//	Imagens do coração
-	public Image heart1;
-	public Image heart2;
-	public Image heart3;
+	public Image[] hearts;
 
 	//	Contador de vidas
 	//	Se chegar em 0 GAME OVER
-	int i = 3;
+	public int coracoes = 3;
 
-	Collider2D col;
+	public Collider2D feet;
+	Rigidbody2D rb;
 
 	float health = 1f;
 
@@ -30,10 +29,12 @@ public class Player : MonoBehaviourSingleton<Player> {
 	public int vida = 100;
 	public float barraVida = 200f;
 
+
 	//	Iventario
 	public RectTransform slot;
 
 	public Inventario inventario;
+
 
 	public float speed;
 	public float jumpSpeed;
@@ -41,13 +42,8 @@ public class Player : MonoBehaviourSingleton<Player> {
 	public float input;
 	public bool jump;
 
-	Rigidbody2D rb;
-
-	public Collider2D feet;
-
 	void Start () {
 		rb = GetComponent<Rigidbody2D> ();
-
 	}
 
 	bool CanJump{
@@ -79,7 +75,6 @@ public class Player : MonoBehaviourSingleton<Player> {
 
 	}
 
-
 	public void Interagir(Itens item1, Itens item2){
 		if ((int)item1.type > (int)item2.type) {
 			Interagir (item2, item1);
@@ -90,16 +85,36 @@ public class Player : MonoBehaviourSingleton<Player> {
 		}
 	}
 
+	void OnTriggerEnter2D(Collider2D col){
+		if (col.gameObject.CompareTag ("Item")) {
+			itemsEncostando.Add (col.GetComponent<Itens> ());
+		}
+	}
+
+	void OnTriggerExit2D(Collider2D col){
+		if (col.gameObject.CompareTag ("Item")) {
+			itemsEncostando.Remove(col.GetComponent<Itens> ());
+		}
+	}
+
 	void Update(){
-		
+
+		if (Input.GetKeyDown (KeyCode.Z)) {
+			if (itemsEncostando.Count > 0) {
+				//faz alguma coisa com itemsEncostando[0]
+				//Destroy(itemsEncostando[0].gameObject);
+				//itemsEncostando.RemoveAt(0);
+			}
+		}
+
 		//	Pega os Itens quando o Player encosta e aperta a tecla Backspace
-		if (col.gameObject.tag == "Item" && Input.GetKeyDown (KeyCode.Z)) {
+		if (feet.gameObject.tag == "Item" && Input.GetKeyDown (KeyCode.Z)) {
 			Debug.Log ("Pegou");
-			inventario.addItem (col.gameObject.GetComponent<Itens>());
-			Destroy (col.gameObject);
+			inventario.addItem (feet.gameObject.GetComponent<Itens>());
+			Destroy (feet.gameObject);
 		} 
 		//	Tomando dano
-		if (col.name == "Damage") {
+		if (feet.name == "Damage") {
 			if(vida >= 0){
 
 				//0.2 sera o somatorio dos danos, dos itens danosos que estao na lista que o player tah encostando
@@ -110,30 +125,30 @@ public class Player : MonoBehaviourSingleton<Player> {
 					vida--;
 				}
 
-
-				lifeText.text = "Vida: " + vida--;	//	Altera o texto
-				lifeTransform.sizeDelta = new Vector2 (vida*2f, lifeTransform.rect.height);
 				//this.dano += col.GetComponent<Dano> ().dano;
 				//this.dano -= col.GetComponent<Dano> ().dano;
 			}
 
 			//	GAME OVER
 			if (vida == 0) {
-				hearts.RemoveAt(0);
-				//heart1.enabled = false;
-				vida = 100;
-				i--;
+				//game over
 			}
 		} 
 		//	Restaurando life
+		/*
 		if (col.name == "Base") {
 			if (vida <= 100) {
-				lifeText.text = "Vida: " + vida++;	//	Altera o texto
-				lifeTransform.sizeDelta = new Vector2 (vida * 2f, lifeTransform.rect.height);
+				vida++;
 			}
 		}
+		*/
 
+		lifeText.text = "Vida: " + vida;	//	Altera o texto
+		lifeTransform.sizeDelta = new Vector2 (vida*2f, lifeTransform.rect.height);
+		for (int i = 0; i < hearts.Length; i++) {
+			hearts [i].gameObject.SetActive (vida > i);
+		}
+		
 	}
-
 
 }

@@ -5,7 +5,10 @@ using System.Collections.Generic;
 
 public class Inventario : MonoBehaviour {
 
-
+	//	Lista de hearts
+	public Sprite[] hearts;
+	public Image image;
+	public Player player;
 
 	int count = 0;
 	public Text textInventario;
@@ -65,11 +68,19 @@ public class Inventario : MonoBehaviour {
 
 	void Start(){
 
+		//	player = GameObject.FindGameObjectWithTag ("Player").GetComponent<Player> ();
+
 		for (int i = 0; i < button.Length; i++) {
 			button [i].GetComponent<Slot> ().ConfigIndex (this, i);
 		}
 
 		UpdateVisual ();
+
 	}
+
+	void Update(){
+		image.sprite = hearts [player.coracoes];
+	}
+
 
 }
